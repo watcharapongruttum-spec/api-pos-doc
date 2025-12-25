@@ -48,6 +48,90 @@ class Receipt < ApplicationRecord
 
 
 
+
+
+
+
+
+def self.pdf(receipts)
+  return if receipts.blank?
+
+  first_receipt = receipts.first
+
+  Prawn::Document.new(page_size: "A4", margin: 50) do |pdf|
+    # Header
+    pdf.text "Receipt", size: 24, style: :bold, align: :center
+    pdf.move_down 20
+
+    # Receipt info
+    pdf.text "Receipt No: #{first_receipt.receipt_no}", size: 12
+    pdf.text "Date: #{first_receipt.created_at.strftime("%d/%m/%Y")}", size: 12
+    pdf.text "Customer ID: #{first_receipt.user_id}", size: 12
+    pdf.move_down 20
+
+    # Table header
+    data = [["Item", "Quantity", "Price", "Total"]]
+
+    # Loop รายการ receipt_items ของ receipt
+    first_receipt.receipt_items.includes(:sku_master).each do |item|
+      data << [
+        item.sku_master.name,
+        item.quantity,
+        item.price.to_f,
+        (item.quantity * item.price.to_f)
+      ]
+    end
+
+    # สร้าง table
+    pdf.table(data, header: true, width: pdf.bounds.width) do
+      row(0).font_style = :bold
+      row(0).background_color = "cccccc"
+      columns(1..3).align = :center
+    end
+
+    pdf.move_down 20
+    # สรุปยอดรวม
+    total_amount = first_receipt.total_summary || first_receipt.receipt_items.sum { |i| i.quantity * i.price.to_f }
+    pdf.text "Total Amount: #{total_amount}", size: 16, style: :bold, align: :right
+    pdf.move_down 40
+    pdf.text "Thank you for your business", size: 12, align: :center
+  end
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   
 
 

@@ -1,5 +1,5 @@
 Rails.application.routes.draw do
-  get 'auth/login'
+
   resources :receipt_items do
     collection do
       get :receipt_items_by_receipt

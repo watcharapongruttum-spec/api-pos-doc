@@ -31,7 +31,7 @@ class ReceiptsController < ApplicationController
 
 
   def receipt_preview
-    @text = "Hello World"  # ข้อความที่จะแสดงใน preview
+    @text = "Hello World"
     render html: "<h1>#{@text}</h1>".html_safe
   end
 
@@ -44,54 +44,38 @@ class ReceiptsController < ApplicationController
 
 
   # GET /receipts/:id/receipt_pdf
-  def receipt_pdf
-    # สร้าง HTML จาก template
-    html = render_to_string(
-      template: "pdf_templates/receipt_pdf",  # path จาก app/views
-      layout: false,
-      locals: { receipt: @receipt }           # ถ้าต้องการใช้ locals
-    )
+def receipt_pdf
+  html = render_to_string(
+    template: "pdf_templates/receipt_pdf",
+    layout: false,
+    locals: { receipt: @receipt }
+  )
 
-    # สร้าง PDF
-    pdf = WickedPdf.new.pdf_from_string(html)
+  pdf = WickedPdf.new.pdf_from_string(html)
 
-    # ส่ง PDF กลับ
-    send_data pdf,
-              filename: "receipt_#{@receipt.id}.pdf",
-              type: "application/pdf",
-              disposition: "inline"
-  end
-
-
-
-
-# def static_pdf
-#   html_file = Rails.root.join("lib/pdf_templates/static_receipt.html")
-#   html = File.read(html_file)
-
-#   pdf = WickedPdf.new.pdf_from_string(html)
-
-#   send_data pdf,
-#             filename: "static_receipt.pdf",
-#             type: "application/pdf",
-#             disposition: "inline"
-# end
+  send_data pdf,
+            filename: "receipt_#{@receipt.id}.pdf",
+            type: "application/pdf",
+            disposition: "inline"
+end
 
 
 
 
 
-  def static_pdf
-    # render template เป็น string
-    html = render_to_string(template: "pdf_templates/static_receipt", layout: false)
+# /receipts/48/static_pdf
 
-    pdf = WickedPdf.new.pdf_from_string(html)
+def static_pdf
+  
+  @receipts = Receipt.where(id: params[:id])
+  pdf = Receipt.pdf(@receipts)
 
-    send_data pdf,
-              filename: "static_receipt.pdf",
-              type: "application/pdf",
-              disposition: "inline"
-  end
+  send_data pdf.render,
+            filename: "static_receipt.pdf",
+            type: "application/pdf",
+            disposition: "inline"
+end
+
 
 
 
