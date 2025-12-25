@@ -20,4 +20,4 @@ test:
 
 production:
   <<: *default
-  database: pos_api_production
+  database: pos_api_development
