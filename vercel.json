@@ -5,7 +5,7 @@
       "src": "config.ru",
       "use": "@vercel/ruby",
       "config": {
-        "rubyVersion": "3.3.3"
+        "rubyVersion": "3.3.0"
       }
     }
   ],
