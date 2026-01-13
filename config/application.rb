@@ -36,8 +36,8 @@ module PosApi
     
 
 
-    # config.api_only = true
-    config.api_only = false
+    config.api_only = true
+    # config.api_only = false
 
   end
 end

@@ -1,12 +1,19 @@
+# default: &default
+#   adapter: postgresql
+#   encoding: unicode
+#   username: postgres
+#   password: nvamOLzSCQCkuAcooTmGjDwpiOBVgPTQ
+#   host: yamabiko.proxy.rlwy.net
+#   port: 15721
+#   database: railway
+#   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+
 default: &default
   adapter: postgresql
   encoding: unicode
-  username: postgres
-  password: nvamOLzSCQCkuAcooTmGjDwpiOBVgPTQ
-  host: yamabiko.proxy.rlwy.net
-  port: 15721
-  database: railway
+  url: <%= ENV['DATABASE_URL'] %>
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+
 
 
 development:
