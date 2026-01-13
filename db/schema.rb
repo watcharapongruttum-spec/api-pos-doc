@@ -10,14 +10,15 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2025_12_19_073143) do
+ActiveRecord::Schema.define(version: 2025_12_19_073143) do
+
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
   create_table "auths", force: :cascade do |t|
     t.string "login"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
   end
 
   create_table "cart_items", force: :cascade do |t|
@@ -25,8 +26,8 @@ ActiveRecord::Schema[7.0].define(version: 2025_12_19_073143) do
     t.bigint "sku_master_id", null: false
     t.integer "quantity"
     t.decimal "price"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
     t.index ["cart_id"], name: "index_cart_items_on_cart_id"
     t.index ["sku_master_id"], name: "index_cart_items_on_sku_master_id"
   end
@@ -36,20 +37,20 @@ ActiveRecord::Schema[7.0].define(version: 2025_12_19_073143) do
     t.decimal "total_summary"
     t.integer "total_amount"
     t.string "status"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
     t.index ["user_id"], name: "index_carts_on_user_id"
   end
 
   create_table "categories", force: :cascade do |t|
     t.string "name"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
   end
 
   create_table "payments", force: :cascade do |t|
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
   end
 
   create_table "receipt_items", force: :cascade do |t|
@@ -57,8 +58,8 @@ ActiveRecord::Schema[7.0].define(version: 2025_12_19_073143) do
     t.bigint "sku_master_id", null: false
     t.integer "quantity"
     t.decimal "price"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
     t.index ["receipt_id"], name: "index_receipt_items_on_receipt_id"
     t.index ["sku_master_id"], name: "index_receipt_items_on_sku_master_id"
   end
@@ -68,8 +69,8 @@ ActiveRecord::Schema[7.0].define(version: 2025_12_19_073143) do
     t.string "receipt_no"
     t.decimal "total_summary"
     t.integer "total_amount"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
     t.index ["user_id"], name: "index_receipts_on_user_id"
   end
 
@@ -78,8 +79,8 @@ ActiveRecord::Schema[7.0].define(version: 2025_12_19_073143) do
     t.bigint "category_id", null: false
     t.integer "amount"
     t.decimal "price"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
     t.index ["category_id"], name: "index_sku_masters_on_category_id"
   end
 
@@ -87,8 +88,8 @@ ActiveRecord::Schema[7.0].define(version: 2025_12_19_073143) do
     t.string "username"
     t.string "password_digest"
     t.string "name"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
     t.string "role", default: "user", null: false
     t.index ["username"], name: "index_users_on_username", unique: true
   end
