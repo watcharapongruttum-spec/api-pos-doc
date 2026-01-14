@@ -19,8 +19,7 @@ gem 'jwt'
 gem 'rack-cors'
 
 # PDF
-gem 'wicked_pdf'
-gem 'wkhtmltopdf-binary'
+
 gem 'prawn'
 gem 'prawn-table'
 
@@ -39,6 +38,9 @@ group :development, :test do
   gem 'rswag'
   gem 'rswag-api'
   gem 'rswag-ui'
+  gem 'wicked_pdf'
+  gem 'wkhtmltopdf-binary'
+
 end
 
 group :development do
