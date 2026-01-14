@@ -1,4 +1,4 @@
-class CreateReceiptItems < ActiveRecord::Migration[7.0]
+class CreateReceiptItems < ActiveRecord::Migration[6.1]
   def change
     create_table :receipt_items do |t|
       t.references :receipt, null: false, foreign_key: true

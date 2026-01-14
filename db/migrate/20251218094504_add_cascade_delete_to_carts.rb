@@ -1,4 +1,4 @@
-class AddCascadeDeleteToCarts < ActiveRecord::Migration[6.0]
+class AddCascadeDeleteToCarts < ActiveRecord::Migration[6.1]
   def change
     # carts.user_id
     remove_foreign_key :carts, :users

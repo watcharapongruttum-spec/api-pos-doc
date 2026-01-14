@@ -1,0 +1,21 @@
+# Git
+.git
+.gitignore
+
+# Rails temp / log
+log
+tmp
+
+# Bundler / Node
+vendor/bundle
+node_modules
+
+# Env
+.env
+
+# Swagger / Rswag
+swagger
+public/swagger
+spec/swagger
+rswag
+spec/requests

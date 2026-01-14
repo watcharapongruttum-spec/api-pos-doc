@@ -3,10 +3,10 @@ require 'rails'
 require 'active_support/all'
 require_relative '../config/environment'
 require 'yaml'
+require 'set'
 
-SWAGGER_FILE = Rails.root.join('swagger', 'v1', 'swagger.yaml')
+SWAGGER_FILE = Rails.root.join('public', 'swagger', 'v1', 'swagger.yaml')
 
-# เริ่มต้นโครงสร้าง Swagger
 swagger = {
   'openapi' => '3.0.3',
   'info' => {
@@ -14,82 +14,196 @@ swagger = {
     'version' => 'v1'
   },
   'servers' => [{ 'url' => 'http://localhost:3000' }],
+  'tags' => [
+    { 'name' => 'Auth', 'description' => 'Authentication' }
+  ],
   'components' => {
     'securitySchemes' => {
-      'bearerAuth' => { 'type' => 'http', 'scheme' => 'bearer', 'bearerFormat' => 'JWT' }
-    }
+      'bearerAuth' => {
+        'type' => 'http',
+        'scheme' => 'bearer',
+        'bearerFormat' => 'JWT'
+      }
+    },
+    'schemas' => {}
   },
   'security' => [{ 'bearerAuth' => [] }],
-  'tags' => [],
   'paths' => {}
 }
 
-# รายการ prefix / keyword ของ route ที่ต้องการตัด
-EXCLUDE_PATTERNS = [
-  'rails/info',
-  'rails/mailers',
-  'rails/conductor',
-  'rails/active_storage',
-  'rails/action_mailbox',
-  'welcome',
-  'proxy',
-  'disk',
-  'direct_uploads',
-  'redirect',
-  'sources',
-  'reroutes',
-  'inbound_emails',
-  'info',
-  'mailers',
-    'welcome'
+EXCLUDE_PATTERNS = %w[
+  rails/info rails/mailers rails/conductor
+  rails/active_storage rails/action_mailbox
+  proxy disk direct_uploads redirect
+  inbound_emails mailers
 ].freeze
 
+swagger_tags = Set.new(['Auth'])
+
 Rails.application.routes.routes.each do |route|
-  # skip route ที่เป็น internal
   path = route.path.spec.to_s.gsub('(.:format)', '')
   next if EXCLUDE_PATTERNS.any? { |p| path.downcase.include?(p) }
 
   controller = route.defaults[:controller]
-  action = route.defaults[:action]
+  action     = route.defaults[:action]
   next if controller.blank? || action.blank?
 
-  tag_name = controller.split('/').last.camelize
-  swagger['tags'] << { 'name' => tag_name, 'description' => "#{tag_name} operations" } unless swagger['tags'].any? { |t| t['name'] == tag_name }
-
-  # กำหนด method
   method = route.verb.to_s.downcase
   method = 'get' if method.blank? || method == 'any'
 
-  swagger['paths'][path] ||= {}
-  swagger['paths'][path][method] ||= {
+  swagger_path = path.gsub(':id', '{id}')
+  swagger['paths'][swagger_path] ||= {}
+
+  # =========================
+  # 🔐 LOGIN
+  # =========================
+  if swagger_path.match?(/\/login/)
+    swagger['components']['schemas']['LoginRequest'] ||= {
+      'type' => 'object',
+      'properties' => {
+        'username' => { 'type' => 'string' },
+        'password' => { 'type' => 'string' }
+      },
+      'required' => %w[username password]
+    }
+
+    swagger['paths'][swagger_path][method] = {
+      'tags' => ['Auth'],
+      'summary' => 'Login',
+      'security' => [],
+      'requestBody' => {
+        'required' => true,
+        'content' => {
+          'application/json' => {
+            'schema' => { '$ref' => '#/components/schemas/LoginRequest' },
+            'example' => {
+              'username' => 'admin',
+              'password' => '123456'
+            }
+          }
+        }
+      },
+      'responses' => {
+        '200' => { 'description' => 'Login success' }
+      }
+    }
+    next
+  end
+
+  tag_name = controller.split('/').last.camelize
+  unless swagger_tags.include?(tag_name)
+    swagger['tags'] << { 'name' => tag_name }
+    swagger_tags << tag_name
+  end
+
+  swagger['paths'][swagger_path][method] ||= {
     'tags' => [tag_name],
-    'summary' => "#{action} action",
-    'responses' => { '200' => { 'description' => 'Success' } }
+    'summary' => action,
+    'responses' => {
+      '200' => { 'description' => 'Success' }
+    }
   }
 
-  # add path param ถ้าเป็น :id
-  if path.include?(':id')
-    swagger['paths'][path][method]['parameters'] ||= []
-    swagger['paths'][path][method]['parameters'] << {
-      'name' => 'id',
-      'in' => 'path',
+  next unless %w[post put patch].include?(method)
+
+  # =========================
+  # 🧑‍💻 USERS CREATE
+  # =========================
+  if controller == 'users' && method == 'post'
+    swagger['components']['schemas']['UserCreateRequest'] ||= {
+      'type' => 'object',
+      'properties' => {
+        'user' => {
+          'type' => 'object',
+          'properties' => {
+            'username' => { 'type' => 'string' },
+            'password' => { 'type' => 'string' },
+            'name'     => { 'type' => 'string' },
+            'role'     => { 'type' => 'string' }
+          },
+          'required' => %w[username password name role]
+        }
+      },
+      'required' => ['user']
+    }
+
+    swagger['paths'][swagger_path][method]['requestBody'] = {
       'required' => true,
-      'schema' => { 'type' => 'integer' }
+      'content' => {
+        'application/json' => {
+          'schema' => { '$ref' => '#/components/schemas/UserCreateRequest' },
+          'example' => {
+            'user' => {
+              'username' => 'example',
+              'password' => '123456',
+              'name' => 'example',
+              'role' => 'user'
+            }
+          }
+        }
+      }
+    }
+    next
+  end
+
+  # =========================
+  # 📦 ActiveRecord → Schema
+  # =========================
+  begin
+    model = controller.singularize.camelize.constantize
+  rescue NameError
+    next
+  end
+  next unless model < ActiveRecord::Base
+
+  schema_name = model.name
+  unless swagger['components']['schemas'][schema_name]
+    properties = {}
+    required = []
+
+    model.columns.each do |col|
+      next if %w[id created_at updated_at].include?(col.name)
+
+      required << col.name unless col.null
+      properties[col.name] =
+        case col.type
+        when :integer, :bigint
+          { 'type' => 'integer' }
+        when :float
+          { 'type' => 'number', 'format' => 'float' }
+        when :decimal
+          { 'type' => 'number', 'format' => 'decimal' }
+        when :boolean
+          { 'type' => 'boolean' }
+        else
+          { 'type' => 'string' }
+        end
+    end
+
+    swagger['components']['schemas'][schema_name] = {
+      'type' => 'object',
+      'properties' => properties,
+      'required' => required
     }
   end
+
+  swagger['paths'][swagger_path][method]['requestBody'] = {
+    'required' => true,
+    'content' => {
+      'application/json' => {
+        'schema' => {
+          'type' => 'object',
+          'properties' => {
+            controller.singularize => {
+              '$ref' => "#/components/schemas/#{schema_name}"
+            }
+          },
+          'required' => [controller.singularize]
+        }
+      }
+    }
+  }
 end
 
-# แปลง key เป็น string ทั้งหมดเพื่อให้ Psych.safe_load อ่านได้
-def stringify_keys(obj)
-  case obj
-  when Hash
-    obj.each_with_object({}) { |(k,v), h| h[k.to_s] = stringify_keys(v) }
-  when Array
-    obj.map { |v| stringify_keys(v) }
-  else
-    obj
-  end
-end
-
-File.write(SWAGGER_FILE, stringify_keys(swagger).to_yaml)
-puts "Swagger YAML generated at #{SWAGGER_FILE}"
+File.write(SWAGGER_FILE, swagger.to_yaml)
+puts "✅ Swagger YAML generated with schemas at #{SWAGGER_FILE}"

@@ -1,0 +1,823 @@
+---
+openapi: 3.0.3
+info:
+  title: POS API
+  version: v1
+servers:
+- url: http://localhost:3000
+tags:
+- name: Auth
+  description: Authentication
+- name: ReceiptItems
+- name: Receipts
+- name: CartItems
+- name: Carts
+- name: SkuMasters
+- name: Categories
+- name: Users
+- name: Payments
+- name: Welcome
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    ReceiptItem:
+      type: object
+      properties:
+        receipt_id:
+          type: integer
+        sku_master_id:
+          type: integer
+        quantity:
+          type: integer
+        price:
+          type: number
+          format: decimal
+      required:
+      - receipt_id
+      - sku_master_id
+    Receipt:
+      type: object
+      properties:
+        user_id:
+          type: integer
+        receipt_no:
+          type: string
+        total_summary:
+          type: number
+          format: decimal
+        total_amount:
+          type: integer
+      required:
+      - user_id
+    CartItem:
+      type: object
+      properties:
+        cart_id:
+          type: integer
+        sku_master_id:
+          type: integer
+        quantity:
+          type: integer
+        price:
+          type: number
+          format: decimal
+      required:
+      - cart_id
+      - sku_master_id
+    Cart:
+      type: object
+      properties:
+        user_id:
+          type: integer
+        total_summary:
+          type: number
+          format: decimal
+        total_amount:
+          type: integer
+        status:
+          type: string
+      required:
+      - user_id
+    SkuMaster:
+      type: object
+      properties:
+        name:
+          type: string
+        category_id:
+          type: integer
+        amount:
+          type: integer
+        price:
+          type: number
+          format: decimal
+      required:
+      - category_id
+    Category:
+      type: object
+      properties:
+        name:
+          type: string
+      required: []
+    UserCreateRequest:
+      type: object
+      properties:
+        user:
+          type: object
+          properties:
+            username:
+              type: string
+            password:
+              type: string
+            name:
+              type: string
+            role:
+              type: string
+          required:
+          - username
+          - password
+          - name
+          - role
+      required:
+      - user
+    User:
+      type: object
+      properties:
+        username:
+          type: string
+        password_digest:
+          type: string
+        name:
+          type: string
+        role:
+          type: string
+      required:
+      - role
+    LoginRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      required:
+      - username
+      - password
+security:
+- bearerAuth: []
+paths:
+  "/receipt_items/receipt_items_by_receipt":
+    get:
+      tags:
+      - ReceiptItems
+      summary: receipt_items_by_receipt
+      responses:
+        '200':
+          description: Success
+  "/receipt_items":
+    get:
+      tags:
+      - ReceiptItems
+      summary: index
+      responses:
+        '200':
+          description: Success
+    post:
+      tags:
+      - ReceiptItems
+      summary: create
+      responses:
+        '200':
+          description: Success
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                receipt_item:
+                  "$ref": "#/components/schemas/ReceiptItem"
+              required:
+              - receipt_item
+  "/receipt_items/{id}":
+    get:
+      tags:
+      - ReceiptItems
+      summary: show
+      responses:
+        '200':
+          description: Success
+    patch:
+      tags:
+      - ReceiptItems
+      summary: update
+      responses:
+        '200':
+          description: Success
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                receipt_item:
+                  "$ref": "#/components/schemas/ReceiptItem"
+              required:
+              - receipt_item
+    put:
+      tags:
+      - ReceiptItems
+      summary: update
+      responses:
+        '200':
+          description: Success
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                receipt_item:
+                  "$ref": "#/components/schemas/ReceiptItem"
+              required:
+              - receipt_item
+    delete:
+      tags:
+      - ReceiptItems
+      summary: destroy
+      responses:
+        '200':
+          description: Success
+  "/receipts/{id}/receipt_preview":
+    get:
+      tags:
+      - Receipts
+      summary: receipt_preview
+      responses:
+        '200':
+          description: Success
+  "/receipts/{id}/receipt_pdf":
+    get:
+      tags:
+      - Receipts
+      summary: receipt_pdf
+      responses:
+        '200':
+          description: Success
+  "/receipts/{id}/static_pdf":
+    get:
+      tags:
+      - Receipts
+      summary: static_pdf
+      responses:
+        '200':
+          description: Success
+  "/receipts":
+    get:
+      tags:
+      - Receipts
+      summary: index
+      responses:
+        '200':
+          description: Success
+    post:
+      tags:
+      - Receipts
+      summary: create
+      responses:
+        '200':
+          description: Success
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                receipt:
+                  "$ref": "#/components/schemas/Receipt"
+              required:
+              - receipt
+  "/receipts/{id}":
+    get:
+      tags:
+      - Receipts
+      summary: show
+      responses:
+        '200':
+          description: Success
+    patch:
+      tags:
+      - Receipts
+      summary: update
+      responses:
+        '200':
+          description: Success
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                receipt:
+                  "$ref": "#/components/schemas/Receipt"
+              required:
+              - receipt
+    put:
+      tags:
+      - Receipts
+      summary: update
+      responses:
+        '200':
+          description: Success
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                receipt:
+                  "$ref": "#/components/schemas/Receipt"
+              required:
+              - receipt
+    delete:
+      tags:
+      - Receipts
+      summary: destroy
+      responses:
+        '200':
+          description: Success
+  "/cart_items":
+    get:
+      tags:
+      - CartItems
+      summary: index
+      responses:
+        '200':
+          description: Success
+    post:
+      tags:
+      - CartItems
+      summary: create
+      responses:
+        '200':
+          description: Success
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                cart_item:
+                  "$ref": "#/components/schemas/CartItem"
+              required:
+              - cart_item
+  "/cart_items/{id}":
+    get:
+      tags:
+      - CartItems
+      summary: show
+      responses:
+        '200':
+          description: Success
+    patch:
+      tags:
+      - CartItems
+      summary: update
+      responses:
+        '200':
+          description: Success
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                cart_item:
+                  "$ref": "#/components/schemas/CartItem"
+              required:
+              - cart_item
+    put:
+      tags:
+      - CartItems
+      summary: update
+      responses:
+        '200':
+          description: Success
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                cart_item:
+                  "$ref": "#/components/schemas/CartItem"
+              required:
+              - cart_item
+    delete:
+      tags:
+      - CartItems
+      summary: destroy
+      responses:
+        '200':
+          description: Success
+  "/carts":
+    get:
+      tags:
+      - Carts
+      summary: index
+      responses:
+        '200':
+          description: Success
+    post:
+      tags:
+      - Carts
+      summary: create
+      responses:
+        '200':
+          description: Success
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                cart:
+                  "$ref": "#/components/schemas/Cart"
+              required:
+              - cart
+  "/carts/{id}":
+    get:
+      tags:
+      - Carts
+      summary: show
+      responses:
+        '200':
+          description: Success
+    patch:
+      tags:
+      - Carts
+      summary: update
+      responses:
+        '200':
+          description: Success
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                cart:
+                  "$ref": "#/components/schemas/Cart"
+              required:
+              - cart
+    put:
+      tags:
+      - Carts
+      summary: update
+      responses:
+        '200':
+          description: Success
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                cart:
+                  "$ref": "#/components/schemas/Cart"
+              required:
+              - cart
+    delete:
+      tags:
+      - Carts
+      summary: destroy
+      responses:
+        '200':
+          description: Success
+  "/sku_masters/search":
+    get:
+      tags:
+      - SkuMasters
+      summary: search
+      responses:
+        '200':
+          description: Success
+  "/sku_masters/by_category":
+    get:
+      tags:
+      - SkuMasters
+      summary: by_category
+      responses:
+        '200':
+          description: Success
+  "/sku_masters/sku_master_pagination":
+    get:
+      tags:
+      - SkuMasters
+      summary: sku_master_pagination
+      responses:
+        '200':
+          description: Success
+  "/sku_masters":
+    get:
+      tags:
+      - SkuMasters
+      summary: index
+      responses:
+        '200':
+          description: Success
+    post:
+      tags:
+      - SkuMasters
+      summary: create
+      responses:
+        '200':
+          description: Success
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sku_master:
+                  "$ref": "#/components/schemas/SkuMaster"
+              required:
+              - sku_master
+  "/sku_masters/{id}":
+    get:
+      tags:
+      - SkuMasters
+      summary: show
+      responses:
+        '200':
+          description: Success
+    patch:
+      tags:
+      - SkuMasters
+      summary: update
+      responses:
+        '200':
+          description: Success
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sku_master:
+                  "$ref": "#/components/schemas/SkuMaster"
+              required:
+              - sku_master
+    put:
+      tags:
+      - SkuMasters
+      summary: update
+      responses:
+        '200':
+          description: Success
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sku_master:
+                  "$ref": "#/components/schemas/SkuMaster"
+              required:
+              - sku_master
+    delete:
+      tags:
+      - SkuMasters
+      summary: destroy
+      responses:
+        '200':
+          description: Success
+  "/categories":
+    get:
+      tags:
+      - Categories
+      summary: index
+      responses:
+        '200':
+          description: Success
+    post:
+      tags:
+      - Categories
+      summary: create
+      responses:
+        '200':
+          description: Success
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                category:
+                  "$ref": "#/components/schemas/Category"
+              required:
+              - category
+  "/categories/{id}":
+    get:
+      tags:
+      - Categories
+      summary: show
+      responses:
+        '200':
+          description: Success
+    patch:
+      tags:
+      - Categories
+      summary: update
+      responses:
+        '200':
+          description: Success
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                category:
+                  "$ref": "#/components/schemas/Category"
+              required:
+              - category
+    put:
+      tags:
+      - Categories
+      summary: update
+      responses:
+        '200':
+          description: Success
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                category:
+                  "$ref": "#/components/schemas/Category"
+              required:
+              - category
+    delete:
+      tags:
+      - Categories
+      summary: destroy
+      responses:
+        '200':
+          description: Success
+  "/users/search":
+    get:
+      tags:
+      - Users
+      summary: search
+      responses:
+        '200':
+          description: Success
+  "/users/roles":
+    get:
+      tags:
+      - Users
+      summary: roles
+      responses:
+        '200':
+          description: Success
+  "/users":
+    get:
+      tags:
+      - Users
+      summary: index
+      responses:
+        '200':
+          description: Success
+    post:
+      tags:
+      - Users
+      summary: create
+      responses:
+        '200':
+          description: Success
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/UserCreateRequest"
+            example:
+              user:
+                username: example
+                password: '123456'
+                name: example
+                role: user
+  "/users/{id}":
+    get:
+      tags:
+      - Users
+      summary: show
+      responses:
+        '200':
+          description: Success
+    patch:
+      tags:
+      - Users
+      summary: update
+      responses:
+        '200':
+          description: Success
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user:
+                  "$ref": "#/components/schemas/User"
+              required:
+              - user
+    put:
+      tags:
+      - Users
+      summary: update
+      responses:
+        '200':
+          description: Success
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user:
+                  "$ref": "#/components/schemas/User"
+              required:
+              - user
+    delete:
+      tags:
+      - Users
+      summary: destroy
+      responses:
+        '200':
+          description: Success
+  "/login":
+    post:
+      tags:
+      - Auth
+      summary: Login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/LoginRequest"
+            example:
+              username: admin
+              password: '123456'
+      responses:
+        '200':
+          description: Login success
+  "/login/admin":
+    post:
+      tags:
+      - Auth
+      summary: Login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/LoginRequest"
+            example:
+              username: admin
+              password: '123456'
+      responses:
+        '200':
+          description: Login success
+  "/cart_by_user/:user_id":
+    get:
+      tags:
+      - Carts
+      summary: cart_by_user
+      responses:
+        '200':
+          description: Success
+  "/payments/cash":
+    post:
+      tags:
+      - Payments
+      summary: cash
+      responses:
+        '200':
+          description: Success
+  "/":
+    get:
+      tags:
+      - Welcome
+      summary: index
+      responses:
+        '200':
+          description: Success

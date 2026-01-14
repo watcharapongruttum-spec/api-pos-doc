@@ -1,4 +1,4 @@
-class AddCascadeDeleteToReceipts < ActiveRecord::Migration[6.0]
+class AddCascadeDeleteToReceipts < ActiveRecord::Migration[6.1]
   def change
     remove_foreign_key :receipts, :users
     add_foreign_key :receipts, :users, on_delete: :cascade
