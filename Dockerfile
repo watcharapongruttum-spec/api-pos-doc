@@ -54,4 +54,5 @@ EXPOSE 3000
 # CMD ["sh", "-c", "bundle exec rails db:migrate && if [ \"$RUN_SEED\" = \"true\" ]; then bundle exec rails db:seed; fi && bundle exec rails server -b 0.0.0.0 -p 3000"]
 
 # CMD ["sh", "-c", "bundle exec rails db:migrate && if [ \"$RUN_SEED\" = \"true\" ]; then bundle exec rails db:seed; fi && bundle exec rails server -b 0.0.0.0 -p $PORT"]
-CMD ["bundle", "exec", "rails", "server", "-b", "0.0.0.0", "-p", "$PORT"]
+
+CMD sh -c "bundle exec rails server -b 0.0.0.0 -p ${PORT:-3000}"
