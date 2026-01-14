@@ -1,26 +1,24 @@
 #######################################
-# Stage 1: Build (ติดตั้ง gem + assets)
+# Stage 1: Builder
 #######################################
-FROM ruby:3.2.2 AS builder
+FROM ruby:3.2.2-slim AS builder
 
 ENV RAILS_ENV=production
 ENV BUNDLE_WITHOUT="development test"
 
-# ติดตั้ง dependency สำหรับ build
+WORKDIR /app
+
+# dependency สำหรับ build
 RUN apt-get update -qq && apt-get install -y \
   build-essential \
   libpq-dev \
   nodejs \
   yarn \
-  wkhtmltopdf \
   && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app
-
-# copy Gemfile เพื่อ cache bundle
+# copy gemfile เพื่อ cache bundle
 COPY Gemfile Gemfile.lock ./
 
-# ติดตั้ง bundler และ gem
 RUN gem install bundler && \
     bundle install --without development test
 
@@ -32,33 +30,27 @@ RUN bundle exec rails assets:precompile
 
 
 #######################################
-# Stage 2: Runtime (image เล็ก)
+# Stage 2: Runtime
 #######################################
 FROM ruby:3.2.2-slim
 
 ENV RAILS_ENV=production
 ENV BUNDLE_WITHOUT="development test"
 
-# ติดตั้งเฉพาะ runtime dependency
+WORKDIR /app
+
+# runtime dependency เท่านั้น
 RUN apt-get update -qq && apt-get install -y \
   libpq5 \
   nodejs \
   wkhtmltopdf \
   && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app
-
-# copy เฉพาะสิ่งที่จำเป็นจาก stage แรก
+# copy bundle และ app จาก builder
 COPY --from=builder /usr/local/bundle /usr/local/bundle
 COPY --from=builder /app /app
 
 EXPOSE 3000
 
-# start rails server
-CMD ["sh", "-c", "bundle exec rails db:migrate && bundle exec rails db:seed && bundle exec rails server -b 0.0.0.0"]
-
-
-
-
-
-
+# migrate + seed + start server
+CMD ["sh", "-c", "bundle exec rails db:migrate && bundle exec rails db:seed && bundle exec rails server -b 0.0.0.0 -p 3000"]
