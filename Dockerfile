@@ -14,19 +14,18 @@ RUN apt-get update -qq && apt-get install -y \
   libpq-dev \
   nodejs \
   yarn \
+  git \
   && rm -rf /var/lib/apt/lists/*
 
 # copy gemfile เพื่อ cache bundle
 COPY Gemfile Gemfile.lock ./
 
-RUN gem install bundler && \
-    bundle install --without development test
+RUN gem install bundler -v 4.0.3 && \
+    bundle config set without 'development test' && \
+    bundle install --jobs 2 --retry 3
 
 # copy source code
 COPY . .
-
-# precompile assets
-RUN bundle exec rails assets:precompile
 
 
 #######################################
@@ -39,11 +38,10 @@ ENV BUNDLE_WITHOUT="development test"
 
 WORKDIR /app
 
-# runtime dependency เท่านั้น
+# runtime dependency เท่าที่จำเป็น
 RUN apt-get update -qq && apt-get install -y \
   libpq5 \
   nodejs \
-  wkhtmltopdf \
   && rm -rf /var/lib/apt/lists/*
 
 # copy bundle และ app จาก builder
@@ -52,5 +50,7 @@ COPY --from=builder /app /app
 
 EXPOSE 3000
 
-# migrate + seed + start server
-CMD ["sh", "-c", "bundle exec rails db:migrate && if [ \"$RUN_SEED\" = \"true\" ]; then bundle exec rails db:seed; fi && bundle exec rails server -b 0.0.0.0 -p 3000"]
+# migrate ทุกครั้ง / seed แค่ครั้งแรก
+# CMD ["sh", "-c", "bundle exec rails db:migrate && if [ \"$RUN_SEED\" = \"true\" ]; then bundle exec rails db:seed; fi && bundle exec rails server -b 0.0.0.0 -p 3000"]
+
+CMD ["sh", "-c", "bundle exec rails db:migrate && if [ \"$RUN_SEED\" = \"true\" ]; then bundle exec rails db:seed; fi && bundle exec rails server -b 0.0.0.0 -p $PORT"]

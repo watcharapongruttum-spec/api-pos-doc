@@ -1,0 +1,37 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15
+    container_name: pos_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: pos_development
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  web:
+    build: .
+    container_name: pos_api
+    command: >
+      sh -c "
+      bundle exec rails db:migrate &&
+      if [ \"$RUN_SEED\" = \"true\" ]; then bundle exec rails db:seed; fi &&
+      bundle exec rails server -b 0.0.0.0 -p 3000
+      "
+    volumes:
+      - .:/app
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    environment:
+      RAILS_ENV: development
+      DATABASE_URL: postgres://postgres:password@db:5432/pos_development
+      RUN_SEED: "true"
+
+volumes:
+  postgres_data:
