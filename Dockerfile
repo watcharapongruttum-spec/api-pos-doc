@@ -53,4 +53,4 @@ COPY --from=builder /app /app
 EXPOSE 3000
 
 # migrate + seed + start server
-CMD ["sh", "-c", "bundle exec rails db:migrate && bundle exec rails db:seed && bundle exec rails server -b 0.0.0.0 -p 3000"]
+CMD ["sh", "-c", "bundle exec rails db:migrate && if [ \"$RUN_SEED\" = \"true\" ]; then bundle exec rails db:seed; fi && bundle exec rails server -b 0.0.0.0 -p 3000"]
