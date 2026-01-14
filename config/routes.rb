@@ -47,7 +47,9 @@ Rails.application.routes.draw do
   post "/login/admin", to: "auth#login_admin"
   get '/cart_by_user/:user_id', to: 'carts#cart_by_user'
   post '/payments/cash', to: 'payments#cash'
-  
+
+  get "/", to: proc { [200, {}, ["OK"]] }
+
 
 
 
