@@ -55,7 +55,8 @@ COPY --from=builder /app /app
 EXPOSE 3000
 
 # start rails server
-CMD ["bundle", "exec", "rails", "server", "-b", "0.0.0.0"]
+CMD ["sh", "-c", "bundle exec rails db:migrate && bundle exec rails server -b 0.0.0.0"]
+
 
 
 
