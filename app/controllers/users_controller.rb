@@ -1,119 +1,63 @@
 class UsersController < ApplicationController
-  before_action :set_user, only: %i[ show update destroy ]
-  skip_before_action :authenticate_request, only: %i[ create ]
-
-
-
-
-
-  # get /users/roles
-  def roles
-    role = params[:role]
-    if role.present?
-      @users = User.where(role: role)
-    else
-      @users = User.all
-    end 
-    render json: User.respon_to_json_user(@users)
-  end
-
-
-
-
-
-
-
-
-
-  # GET /users/search?q=keyword
-  # def search
-  #   keyword = params[:keyword]
-  #   if keyword.present?
-  #     @users = User.search(keyword)
-  #   else
-  #     @users = User.all
-  #   end
-  #   render json: User.respon_to_json_user(@users)
-  # end
-
-
-
-  # GET /users/search?keyword=xxx
-def search
-  @users = User.search_sql(params)
-  render json: User.respon_to_json_user(@users)
-end
-
-
-
-
-
-
-
-
+  before_action :set_user, only: %i[show update destroy]
+  skip_before_action :authenticate_request, only: %i[create]
 
   # GET /users
   def index
-    @users = User.all_sql
-    render json: User.respon_to_json_user(@users)
+    users = User.select(:id, :username, :name, :role)
+    render json: users
   end
 
+  # GET /users/search?keyword=xxx
+  def search
+    users = User.search(params[:keyword])
+    render json: users.select(:id, :username, :name, :role)
+  end
 
+  # GET /users/roles?role=user
+  def roles
+    users =
+      params[:role].present?
+        ? User.where(role: params[:role])
+        : User.all
 
-  
+    render json: users.select(:id, :username, :name, :role)
+  end
 
-  # GET /users/1
   def show
-    render json: @user
+    render json: @user.slice(:id, :username, :name, :role)
   end
 
-
-
-
-  # POST /users
   def create
-    @user = User.new(user_params)
+    user = User.new(user_params)
 
-    if @user.save
-      render json: @user, status: :created, location: @user
+    if user.save
+      render json: user.slice(:id, :username, :name, :role), status: :created
     else
-      render json: @user.errors, status: :unprocessable_entity
+      render json: user.errors, status: :unprocessable_entity
     end
   end
 
-
-
-
-
-
-  
-
-
-
-
-
-  # PATCH/PUT /users/1
   def update
     if @user.update(user_params)
-      render json: @user
+      render json: @user.slice(:id, :username, :name, :role)
     else
       render json: @user.errors, status: :unprocessable_entity
     end
   end
 
-  # DELETE /users/1
   def destroy
     @user.destroy
+    head :no_content
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_user
-      @user = User.find(params[:id])
-    end
+
+  def set_user
+    @user = User.find(params[:id])
+  end
 
   def user_params
     params.require(:user).permit(:username, :name, :password, :password_confirmation, :role)
   end
-
 end
