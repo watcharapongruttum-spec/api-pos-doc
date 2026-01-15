@@ -16,18 +16,21 @@ class UsersController < ApplicationController
 
   # GET /users/roles?role=user
   def roles
-    users =
-      params[:role].present?
-        ? User.where(role: params[:role])
-        : User.all
+    if params[:role].present?
+      users = User.where(role: params[:role])
+    else
+      users = User.all
+    end
 
     render json: users.select(:id, :username, :name, :role)
   end
 
+  # GET /users/:id
   def show
     render json: @user.slice(:id, :username, :name, :role)
   end
 
+  # POST /users
   def create
     user = User.new(user_params)
 
@@ -38,6 +41,7 @@ class UsersController < ApplicationController
     end
   end
 
+  # PATCH /users/:id
   def update
     if @user.update(user_params)
       render json: @user.slice(:id, :username, :name, :role)
@@ -46,6 +50,7 @@ class UsersController < ApplicationController
     end
   end
 
+  # DELETE /users/:id
   def destroy
     @user.destroy
     head :no_content
@@ -58,6 +63,8 @@ class UsersController < ApplicationController
   end
 
   def user_params
-    params.require(:user).permit(:username, :name, :password, :password_confirmation, :role)
+    params
+      .require(:user)
+      .permit(:username, :name, :password, :password_confirmation, :role)
   end
 end
